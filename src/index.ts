@@ -1,10 +1,6 @@
 import WhatsApp from "./lib/whatsapp"
 
 interface Env {
-	PINECONE_API_KEY: string
-	PINECONE_ENVIRONMENT: string
-	PINECONE_INDEX: string
-	OPENAI_SECRET_KEY: string
 	WHATSAPP_WEBHOOK_TOKEN: string
 	WHATSAPP_PHONE_NUMBER_ID: string
 	META_ACCESS_TOKEN: string
@@ -149,18 +145,25 @@ export default {
 				const message = messages[0]
 
 				if (message !== undefined) {
-					let query: string
+					let body: string
 
 					if (message.type === "text") {
-						query = message.text.body
+						body = message.text.body
 					} else if (
 						message.type === "interactive" &&
 						message.interactive.type === "button_reply"
 					) {
-						query = message.interactive.button_reply.id
+						body = message.interactive.button_reply.id
 					} else {
 						return new Response()
 					}
+
+					await WhatsApp.sendText({
+						fromPhoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID,
+						toPhoneNumber: message.from,
+						metaAccessToken: env.META_ACCESS_TOKEN,
+						body,
+					})
 
 					return new Response()
 				} else {
